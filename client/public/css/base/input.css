@@ -1,0 +1,141 @@
+.m-input {
+    padding-left: 12px;
+    padding-right: 8px;
+    border-radius: var(--boder-radius);
+    height:var(--height-36);
+    border: 1px solid #babec5;
+    outline: none;
+    width: -webkit-fill-available;
+}
+
+/* CSS input width */
+
+.m-input-40 {
+    width: 40% !important;
+}
+
+.m-input-60 {
+    width: 60% !important;
+}
+
+.m-input-100 {
+    width: 100% !important;
+}
+
+.m-input::placeholder {
+    font-size: 12px;
+    color: #949494;
+    font-style: italic;
+}
+
+.m-input:hover {
+    outline: 1px solid #e2e2e2;
+}
+
+.m-input:focus {
+    border: 1px solid #2ca01c;
+}
+
+.m-icon-after {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    position: absolute;
+    right: 8px;
+    top: 8px
+}
+
+.m-input-search {
+    min-width: 240px;
+    width: 240px;
+}
+
+.m-input-title-gender {
+    padding-bottom: 8px;
+}
+
+.m-input-title {
+    font-size: 12px;
+   font-family: Noto-Sans-SemiBold;
+    padding-bottom: 8px;
+    white-space: nowrap;
+}
+
+.m-input-disabled, .m-input-disabled:hover{
+    cursor: default;
+    background-color: rgb(115, 198, 99);
+
+}
+
+.m-input-title-require{
+    color: #E60000;
+}
+
+.m-input-error{
+    border-color: #E60000;
+}
+.m-input-message-error{
+   position: absolute;
+   padding-top: 8px;
+   font-size: 12px;
+   color: #E60000;
+   display: none;
+}
+
+/* input[required].m-input-error+div.m-input-message-error{
+    display: block;
+}  */
+
+/* Input radio */
+.m-con-radio {
+    margin-right: 20px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    -webkit-box-align: center;
+    -webkit-box-pack: center;
+}
+
+.m-input-radio {
+    position: absolute;
+    left: 0;
+    opacity: 0;
+    width: 20px;
+}
+
+.m-radio {
+    cursor: pointer;
+    position: relative;
+}
+
+.m-radio-border {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid #afafaf;
+    background: #fff;
+    z-index: 1;
+    justify-content: center;
+    display: block;
+}
+
+.m-input-radio:checked+.m-radio .m-radio-border {
+    border-color: #2ca01c;
+}
+
+.m-input-radio:checked+.m-radio .m-radio-circle {
+    display: block;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: 4px;
+    left: 4px;
+    border-radius: 50%;
+    background: #2ca01c;
+}
+
+.m-radio-label {
+    margin-left: 10px;
+    cursor: pointer;
+}
