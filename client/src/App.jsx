@@ -5,21 +5,20 @@ import ManagerUser from "./components/page/ManagerUser";
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./components/page/HomePage";
 import NotFound from "./components/page/NotFound";
+import Login from "./components/page/login/Login";
 
 function App() {
   return (
     <>
-      <div className="m-container">
-        <Sidebar />
-        <div className="m-content">
-          <Header />
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/manager-user" element={<ManagerUser />} />
-            <Route path="/*" element={<NotFound />} />
-          </Routes>
-        </div>
-      </div>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/manager-user" element={<ManagerUser />} />
+        {/* <Route path="/*" element={<NotFound />} /> */}
+      </Routes>
+
+      <Routes>
+        <Route path="/login" element={<Login />} />
+      </Routes>
     </>
   );
 }

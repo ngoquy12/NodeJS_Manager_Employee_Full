@@ -1,11 +1,109 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { notification } from "antd";
 
-export default function Form({ handleClose }) {
+export default function Form({ handleClose, loadData }) {
   const [close, setClose] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [employeeCode, setEmployeeCode] = useState("");
+  const [employeeName, setEmployeeName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [gender, setGender] = useState(0);
+  const [department, setDepartment] = useState("");
+  const [identityNumber, setIdentityNumber] = useState("");
+  const [dateRange, setDateRange] = useState("");
+  const [position, setPosition] = useState("");
+  const [issuedBy, setIssuedBy] = useState("");
+  const [address, setAddress] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [bankNumber, setBankNumber] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [bankBranch, setBankBranch] = useState("");
+  const [email, setEmail] = useState("");
 
   // Đóng form truyền xuống component chacha
   const handleCloseParent = () => {
     setClose(handleClose);
+  };
+
+  // Gọi API lấy thông tin tất cả phòng ban
+  const getAllDepartment = () => {
+    axios
+      .get("http://localhost:8080/api/v1/departments")
+      .then((res) => setDepartments(res.data.data))
+      .catch((err) => console.log(err));
+  };
+
+  useEffect(() => {
+    getAllDepartment();
+  }, []);
+
+  // Danh sách giới tính
+  const genders = [
+    {
+      id: 0,
+      value: 0,
+      title: "Nam",
+    },
+    {
+      id: 1,
+      value: 1,
+      title: "Nữ",
+    },
+    {
+      id: 2,
+      value: 2,
+      title: "Khác",
+    },
+  ];
+
+  // Handle Submit
+  const handleSubmit = () => {
+    // Lấy thông tin newUser
+    const newUser = {
+      EmployeeCode: employeeCode,
+      EmployeeName: employeeName,
+      DateOfBirth: dateOfBirth,
+      Gender: gender,
+      DepartmentId: department,
+      IdentityNumber: identityNumber,
+      DateRange: dateRange,
+      Position: position,
+      IssuedBy: issuedBy,
+      Address: address,
+      PhoneNumber: phoneNumber,
+      Password: password,
+      Email: email,
+      BankNumber: bankNumber,
+      BankName: bankName,
+      BankBranch: bankBranch,
+      CreatedDate: new Date(),
+      CreatedBy: "Ngọ Văn Quý",
+      ModifiedDate: new Date(),
+      ModifiedBy: "Ngọ Văn Quý",
+    };
+
+    axios
+      .post("http://localhost:8080/api/v1/employees", newUser)
+      .then((res) => {
+        if (res.data.status === 201) {
+          // Đóng form
+          handleCloseParent();
+          notification.success({
+            message: res.data.message,
+          });
+          //load lại data
+          loadData();
+        }
+      })
+      .catch((err) => {
+        if (err.response.data.status === 400) {
+          notification.error({
+            message: err.response.data.message,
+          });
+        }
+      });
   };
 
   return (
@@ -71,6 +169,8 @@ export default function Form({ handleClose }) {
                             type="text"
                             className="m-input m-input-require m-input-code"
                             required=""
+                            value={employeeCode}
+                            onChange={(e) => setEmployeeCode(e.target.value)}
                             name="EmployeeCode"
                             maxLength={25}
                             propname="EmployeeCode"
@@ -89,6 +189,8 @@ export default function Form({ handleClose }) {
                             type="text"
                             className="m-input m-input-require"
                             required=""
+                            value={employeeName}
+                            onChange={(e) => setEmployeeName(e.target.value)}
                             name="EmployeeName"
                             maxLength={128}
                             propname="EmployeeName"
@@ -104,28 +206,21 @@ export default function Form({ handleClose }) {
                             <div className="m-input-title-require">&nbsp;*</div>
                           </div>
                           <div className="m-combo-box">
-                            <div className="m-combo-main-content m-input-error">
-                              <div className="m-selected-options">
-                                <input
-                                  type="hidden"
-                                  name="DepartmentId"
-                                  propname="DepartmentId"
-                                />
-                                <input
-                                  type="text"
-                                  className="m-combo-input"
-                                  required=""
-                                  name="DepartmentName"
-                                  propname="DepartmentName"
-                                  tabIndex={7}
-                                />
-                              </div>
-                              <div className="m-combo-action m-select-department">
-                                <div className="m-btn-dropdown">
-                                  <div className="m-icon-16 m-icon-arrow-dropdown" />
-                                </div>
-                              </div>
-                            </div>
+                            <select
+                              name=""
+                              id=""
+                              className="m-input"
+                              onChange={(e) => setDepartment(e.target.value)}
+                            >
+                              {departments.map((dep) => (
+                                <option
+                                  value={dep.DepartmentId}
+                                  key={dep.DepartmentId}
+                                >
+                                  {dep.DepartmentName}
+                                </option>
+                              ))}
+                            </select>
                             <div className="m-input-message-error">
                               &lt;Đơn vị&gt;không được để trống
                             </div>
@@ -139,6 +234,8 @@ export default function Form({ handleClose }) {
                             type="text"
                             className="m-input"
                             name="EmployeePosition"
+                            value={position}
+                            onChange={(e) => setPosition(e.target.value)}
                             maxLength={128}
                             propname="EmployeePosition"
                             tabIndex={10}
@@ -152,6 +249,8 @@ export default function Form({ handleClose }) {
                           </div>
                           <input
                             type="date"
+                            value={dateOfBirth}
+                            onChange={(e) => setDateOfBirth(e.target.value)}
                             className="m-input"
                             name="DateOfBirth"
                             propname="DateOfBirth"
@@ -165,49 +264,25 @@ export default function Form({ handleClose }) {
                             </div>
                           </div>
                           <div className="m-radio-group">
-                            <label className="m-con-radio">
-                              <input
-                                type="radio"
-                                className="m-input-radio"
-                                defaultValue={0}
-                                name="Gender"
-                                defaultChecked=""
-                                tabIndex={4}
-                              />
-                              <span className="m-radio">
-                                <span className="m-radio-border" />
-                                <span className="m-radio-circle" />
-                              </span>
-                              <span className="m-radio-label">Nam</span>
-                            </label>
-                            <label className="m-con-radio">
-                              <input
-                                type="radio"
-                                className="m-input-radio"
-                                defaultValue={1}
-                                name="Gender"
-                                tabIndex={5}
-                              />
-                              <span className="m-radio">
-                                <span className="m-radio-border" />
-                                <span className="m-radio-circle" />
-                              </span>
-                              <span className="m-radio-label">Nữ</span>
-                            </label>
-                            <label className="m-con-radio">
-                              <input
-                                type="radio"
-                                className="m-input-radio"
-                                defaultValue={2}
-                                name="Gender"
-                                tabIndex={6}
-                              />
-                              <span className="m-radio">
-                                <span className="m-radio-border" />
-                                <span className="m-radio-circle" />
-                              </span>
-                              <span className="m-radio-label">Khác</span>
-                            </label>
+                            {genders.map((gend) => (
+                              <label className="m-con-radio">
+                                <input
+                                  type="radio"
+                                  className="m-input-radio"
+                                  checked={gend.id === gender}
+                                  onChange={() => setGender(gend.id)}
+                                  name="Gender"
+                                  tabIndex={4}
+                                />
+                                <span className="m-radio">
+                                  <span className="m-radio-border" />
+                                  <span className="m-radio-circle" />
+                                </span>
+                                <span className="m-radio-label">
+                                  {gend.title}
+                                </span>
+                              </label>
+                            ))}
                           </div>
                         </div>
                         <div className="m-input-60 m-pr-6 m-pb-24">
@@ -224,6 +299,8 @@ export default function Form({ handleClose }) {
                             className="m-input"
                             name="IdentityNumber"
                             maxLength={20}
+                            value={identityNumber}
+                            onChange={(e) => setIdentityNumber(e.target.value)}
                             propname="IdentityNumber"
                             tabIndex={8}
                           />
@@ -234,6 +311,8 @@ export default function Form({ handleClose }) {
                           </div>
                           <input
                             type="date"
+                            value={dateRange}
+                            onChange={(e) => setDateRange(e.target.value)}
                             className="m-input"
                             name="IdentityDate"
                             propname="IdentityDate"
@@ -247,6 +326,8 @@ export default function Form({ handleClose }) {
                           <input
                             type="text"
                             className="m-input"
+                            value={issuedBy}
+                            onChange={(e) => setIssuedBy(e.target.value)}
                             name="IdentityPlace"
                             propname="IdentityPlace"
                             tabIndex={11}
@@ -261,6 +342,8 @@ export default function Form({ handleClose }) {
                         </div>
                         <input
                           type="text"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
                           className="m-input"
                           name="Address"
                           propname="Address"
@@ -282,6 +365,8 @@ export default function Form({ handleClose }) {
                           <input
                             type="text"
                             className="m-input"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
                             name="TelephoneNumber"
                             propname="TelephoneNumber"
                             tabIndex={13}
@@ -294,6 +379,8 @@ export default function Form({ handleClose }) {
                             </div>
                           </div>
                           <input
+                            value={bankNumber}
+                            onChange={(e) => setBankNumber(e.target.value)}
                             type="text"
                             className="m-input"
                             name="BankAccountNumber"
@@ -309,10 +396,12 @@ export default function Form({ handleClose }) {
                               className="m-input-title"
                               title="Điện thoại cố định"
                             >
-                              ĐT cố định
+                              Mật khẩu
                             </div>
                           </div>
                           <input
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                             type="text"
                             className="m-input"
                             name="PhoneNumber"
@@ -327,6 +416,8 @@ export default function Form({ handleClose }) {
                           <input
                             type="text"
                             className="m-input"
+                            value={bankName}
+                            onChange={(e) => setBankName(e.target.value)}
                             name="BankName"
                             propname="BankName"
                             tabIndex={17}
@@ -341,6 +432,8 @@ export default function Form({ handleClose }) {
                           <input
                             type="text"
                             id="m-email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className="m-input"
                             name="Email"
                             propname="Email"
@@ -354,6 +447,8 @@ export default function Form({ handleClose }) {
                           </div>
                           <input
                             type="text"
+                            value={bankBranch}
+                            onChange={(e) => setBankBranch(e.target.value)}
                             className="m-input"
                             name="BankBranchName"
                             propname="BankBranchName"
@@ -379,16 +474,11 @@ export default function Form({ handleClose }) {
                     </div>
                     <div className="m-popup-btn-right">
                       <button
-                        className="m-button m-button-secondary m-button-size-default m-button-border-false m-popup-store-btn"
-                        tabIndex={20}
-                      >
-                        <div className="m-button-text">Cất</div>
-                      </button>
-                      <button
+                        onClick={handleSubmit}
                         className="m-button m-button-size-default m-button-border-false m-popup-store-and-add-btn"
                         tabIndex={19}
                       >
-                        <div className="m-button-text">Cất và thêm</div>
+                        <div className="m-button-text">Lưu</div>
                       </button>
                     </div>
                   </div>

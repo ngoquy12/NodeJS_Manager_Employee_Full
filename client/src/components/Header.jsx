@@ -1,6 +1,8 @@
 import React from "react";
 
 export default function Header() {
+  // Lấy dữ liệu từ local
+  const userLocal = JSON.parse(localStorage.getItem("userInfo"));
   return (
     <>
       <div className="m-navbar">
@@ -20,9 +22,9 @@ export default function Header() {
           />
           <div className="m-navbar-user">
             <div className="m-user-image">
-              <img src="./assets/img/default-avatar.jpg" alt="User image" />
+              <img src={userLocal.BankName} alt="User image" />
             </div>
-            <div className="m-user-name">Ngọ Văn Quý</div>
+            <div className="m-user-name">{userLocal.EmployeeName}</div>
             <div className="m-navbar-icon m-icon-14 m-icon-chevron-down" />
           </div>
         </div>

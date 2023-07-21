@@ -1,8 +1,15 @@
 const express = require("express");
 const database = require("../connection/connectionMySQL");
 const cors = require("cors");
+const bodyParser = require("body-parser");
+const { v4: uuidv4 } = require("uuid");
+const { FORMATDATERERVESE } = require("../formatData/formatDate");
+const { checkDataEmpty, validateEmail } = require("../middleware/validateData");
+const bcrypt = require("bcrypt");
 
 const route = express.Router();
+route.use(bodyParser.json());
+route.use(bodyParser.urlencoded({ extended: true }));
 route.use(cors());
 
 // Lấy thông tin tất cả employee + Phân trang và tìm kiếm
@@ -55,6 +62,172 @@ route.get("/", (req, res) => {
           });
         }
       });
+    }
+  });
+});
+
+// Lấy thông tin tất cả employee + Phân trang và tìm kiếm
+route.get("/:id", (req, res) => {
+  // Câu Câu lệnh query
+  const queryString = "SELECT * FROM employees WHERE EmployeeId = ?";
+  const { id } = req.params;
+  database.query(queryString, [id], (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        status: 500,
+        devMessage: err,
+      });
+    } else {
+      return res.status(200).json({
+        status: 200,
+        data: result[0],
+      });
+    }
+  });
+});
+
+// API xóa thông tin một nhân viên the id
+route.delete("/:id", (req, res) => {
+  // Lấy if thông qua param
+  const { id } = req.params;
+  const queryString = "delete from employees where EmployeeId =  ?"; // Prepare Statement
+  database.query(queryString, [id], (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        status: 500,
+        devMsg: err,
+        userMsg: "Lỗi hệ thống",
+      });
+    } else {
+      return res.status(200).json({
+        status: 200,
+        userMsg: "Xóa thành công",
+      });
+    }
+  });
+});
+
+// API thêm mới nhân viên
+route.post("/", checkDataEmpty, validateEmail, (req, res) => {
+  // Lấy dữ liệu dưới body
+  const newId = uuidv4();
+  const {
+    EmployeeCode,
+    EmployeeName,
+    DateOfBirth,
+    Gender,
+    DepartmentId,
+    IdentityNumber,
+    DateRange,
+    Position,
+    IssuedBy,
+    Address,
+    PhoneNumber,
+    Password,
+    Email,
+    BankNumber,
+    BankName,
+    BankBranch,
+    CreatedDate,
+    CreatedBy,
+    ModifiedDate,
+    ModifiedBy,
+  } = req.body;
+
+  // Mã hóa mật khẩu
+  bcrypt.hash(Password, 10, (err, isHash) => {
+    if (err) {
+      return res.status(500).json({
+        message: err,
+      });
+    } else {
+      const newDateOfBirth = FORMATDATERERVESE(DateOfBirth);
+      const newCreatedDate = FORMATDATERERVESE(CreatedDate);
+      const newModifiedDate = FORMATDATERERVESE(ModifiedDate);
+
+      const newUser = [
+        newId,
+        EmployeeCode,
+        EmployeeName,
+        newDateOfBirth,
+        Gender,
+        DepartmentId,
+        IdentityNumber,
+        DateRange,
+        Position,
+        IssuedBy,
+        Address,
+        PhoneNumber,
+        isHash,
+        Email,
+        BankNumber,
+        BankName,
+        BankBranch,
+        newCreatedDate,
+        CreatedBy,
+        newModifiedDate,
+        ModifiedBy,
+      ];
+
+      // Câu lệnh query
+      const queryString =
+        "INSERT INTO employees(EmployeeId, EmployeeCode,EmployeeName,DateOfBirth,Gender,DepartmentId,IdentityNumber,DateRange,Position,IssuedBy,Address,PhoneNumber,Password,Email,BankNumber,BankName,BankBranch,CreatedDate, CreatedBy, ModifiedDate,ModifiedBy ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+      database.query(queryString, newUser, (err, result) => {
+        if (err) {
+          return res.status(500).json({
+            status: 500,
+            devMessage: err,
+          });
+        } else {
+          return res.status(201).json({
+            status: 201,
+            message: "Thêm mới thành công",
+          });
+        }
+      });
+    }
+  });
+});
+
+// API đăng nhập
+route.post("/login", (req, res) => {
+  // Lấy Email và Password từ client
+  const { Email, Password } = req.body;
+  // Kiểm tra email có tồn tại trong dc?
+  const query = "SELECT * FROM employees WHERE Email = ?";
+  database.query(query, [Email], (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        status: 500,
+        devMessage: err,
+      });
+    } else {
+      if (result.length > 0) {
+        const user = result[0];
+        // Giải mã password
+        bcrypt.compare(Password, user.Password, (err, isMatch) => {
+          if (err) {
+            return res.status(500).json({
+              status: 500,
+              devMessage: err,
+            });
+          } else {
+            if (!isMatch) {
+              return res.status(401).json({
+                status: 401,
+                userMessage: "Mật khẩu nhập vào không đúng",
+              });
+            } else {
+              return res.status(200).json({
+                status: 200,
+                message: "Đăng nhập thành công",
+                data: user,
+              });
+            }
+          }
+        });
+      }
     }
   });
 });
