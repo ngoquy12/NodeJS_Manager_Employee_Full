@@ -3,30 +3,69 @@ import React, { useEffect, useState } from "react";
 import { notification } from "antd";
 import { FORMATDATE, FORMATDATERERVESE } from "./../../formatData/formatDate";
 
-export default function FormEdit({ idEdit }) {
+export default function FormEdit({ idEdit, handleCloseEdit, loadData }) {
   const [close, setClose] = useState(false);
   const [departments, setDepartments] = useState([]);
-  const [employeeCode, setEmployeeCode] = useState("");
-  const [employeeName, setEmployeeName] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
-  const [gender, setGender] = useState(0);
-  const [department, setDepartment] = useState("");
-  const [identityNumber, setIdentityNumber] = useState("");
-  const [dateRange, setDateRange] = useState("");
-  const [position, setPosition] = useState("");
-  const [issuedBy, setIssuedBy] = useState("");
-  const [address, setAddress] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [phoneFixed, setPhoneFixed] = useState("");
-  const [bankNumber, setBankNumber] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [bankBranch, setBankBranch] = useState("");
-  const [email, setEmail] = useState("");
-  const [employeeEdit, setEmployeeEdit] = useState({});
 
-  // Đóng form truyền xuống component chacha
-  const handleCloseParent = () => {
-    setClose(handleClose);
+  // Khởi tạo đối tượng employee
+  const [employee, setEmployee] = useState({
+    EmployeeCode: "",
+    EmployeeName: "",
+    DateOfBirth: "",
+    Gender: 0,
+    DepartmentId: "",
+    IdentityNumber: "",
+    DateRange: "",
+    Position: "",
+    Password: "",
+    IssuedBy: "",
+    Address: "",
+    PhoneNumber: "",
+    PhoneFixed: "",
+    BankNumber: "",
+    BankName: "",
+    BankBranch: "",
+    Email: "",
+    ModifiedDate: FORMATDATE(new Date()),
+    ModifiedBy: "Ngọ Văn Sửu",
+  });
+
+  const {
+    EmployeeCode,
+    EmployeeName,
+    DateOfBirth,
+    Gender,
+    DepartmentId,
+    IdentityNumber,
+    DateRange,
+    Position,
+    IssuedBy,
+    Password,
+    Address,
+    PhoneNumber,
+    BankNumber,
+    BankName,
+    BankBranch,
+    Email,
+  } = employee;
+
+  // Lắng nghe sự thay đổi giá trị trong các ô input và radio
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
+
+    if (type === "radio" && name === "Gender") {
+      // Nếu là ô radio giới tính, sử dụng parseInt để chuyển giá trị về số nguyên
+      setEmployee((prevEmployee) => ({
+        ...prevEmployee,
+        Gender: parseInt(value, 10), //10: Đây là hệ cơ số mà bạn muốn sử dụng để phân tích chuỗi. Trong trường hợp này, hệ cơ số 10 đại diện cho hệ thập phân, tức là các con số từ 0 đến 9.
+      }));
+    } else {
+      // Nếu là các ô input thông thường thì giữ nguyên giá trị trong state employee
+      setEmployee((prevEmployee) => ({
+        ...prevEmployee,
+        [name]: value,
+      }));
+    }
   };
 
   // Gọi API lấy thông tin tất cả phòng ban
@@ -64,7 +103,9 @@ export default function FormEdit({ idEdit }) {
   const getById = () => {
     axios
       .get(`http://localhost:8080/api/v1/employees/${idEdit}`)
-      .then((res) => setEmployeeEdit(res.data.data))
+      .then((res) => {
+        setEmployee(res.data.data);
+      })
       .catch((err) => console.log(err));
   };
 
@@ -72,38 +113,19 @@ export default function FormEdit({ idEdit }) {
     getById();
   }, []);
 
+  // Đóng form edit
+  const handleCloseForm = () => {
+    handleCloseEdit(close);
+  };
+
   // Handle Submit
   const handleSubmit = () => {
-    // Lấy thông tin newUser
-    const newUser = {
-      EmployeeCode: employeeCode,
-      EmployeeName: employeeName,
-      DateOfBirth: dateOfBirth,
-      Gender: gender,
-      DepartmentId: department,
-      IdentityNumber: identityNumber,
-      DateRange: dateRange,
-      Position: position,
-      IssuedBy: issuedBy,
-      Address: address,
-      PhoneNumber: phoneNumber,
-      PhoneFixed: phoneFixed,
-      Email: email,
-      BankNumber: bankNumber,
-      BankName: bankName,
-      BankBranch: bankBranch,
-      CreatedDate: new Date(),
-      CreatedBy: "Ngọ Văn Quý",
-      ModifiedDate: new Date(),
-      ModifiedBy: "Ngọ Văn Quý",
-    };
-
     axios
-      .post("http://localhost:8080/api/v1/employees", newUser)
+      .put(`http://localhost:8080/api/v1/employees/${idEdit}`, employee)
       .then((res) => {
-        if (res.data.status === 201) {
+        if (res.data.status === 200) {
           // Đóng form
-          handleCloseParent();
+          handleCloseForm();
           notification.success({
             message: res.data.message,
           });
@@ -165,7 +187,7 @@ export default function FormEdit({ idEdit }) {
                     className="m-icon-24 m-icon-close m-close-add-popup"
                     title="Đóng(ESC)"
                     value={close}
-                    onClick={handleCloseParent}
+                    onClick={handleCloseForm}
                   />
                 </div>
               </div>
@@ -182,9 +204,8 @@ export default function FormEdit({ idEdit }) {
                           <input
                             type="text"
                             className="m-input m-input-require m-input-code"
-                            required=""
-                            value={employeeCode}
-                            onChange={(e) => setEmployeeCode(e.target.value)}
+                            value={EmployeeCode}
+                            onChange={(e) => handleChange(e)}
                             name="EmployeeCode"
                             maxLength={25}
                             propname="EmployeeCode"
@@ -202,12 +223,10 @@ export default function FormEdit({ idEdit }) {
                           <input
                             type="text"
                             className="m-input m-input-require"
-                            required=""
-                            value={employeeName}
-                            onChange={(e) => setEmployeeName(e.target.value)}
+                            value={EmployeeName}
+                            onChange={(e) => handleChange(e)}
                             name="EmployeeName"
                             maxLength={128}
-                            propname="EmployeeName"
                             tabIndex={2}
                           />
                           <div className="m-input-message-error">
@@ -221,10 +240,10 @@ export default function FormEdit({ idEdit }) {
                           </div>
                           <div className="m-combo-box">
                             <select
-                              name=""
-                              id=""
+                              name="DepartmentId"
                               className="m-input"
-                              onChange={(e) => setDepartment(e.target.value)}
+                              onChange={(e) => handleChange(e)}
+                              value={DepartmentId}
                             >
                               {departments.map((dep) => (
                                 <option
@@ -247,11 +266,11 @@ export default function FormEdit({ idEdit }) {
                           <input
                             type="text"
                             className="m-input"
-                            name="EmployeePosition"
-                            value={employeeEdit.Position}
-                            onChange={(e) => setPosition(e.target.value)}
+                            name="Position"
+                            value={Position}
+                            onChange={(e) => handleChange(e)}
                             maxLength={128}
-                            propname="EmployeePosition"
+                            propname="Position"
                             tabIndex={10}
                           />
                         </div>
@@ -263,11 +282,10 @@ export default function FormEdit({ idEdit }) {
                           </div>
                           <input
                             type="date"
-                            value={FORMATDATERERVESE(employeeEdit.DateOfBirth)}
-                            onChange={(e) => setDateOfBirth(e.target.value)}
+                            value={FORMATDATERERVESE(DateOfBirth)}
+                            onChange={(e) => handleChange(e)}
                             className="m-input"
                             name="DateOfBirth"
-                            propname="DateOfBirth"
                             tabIndex={3}
                           />
                         </div>
@@ -283,9 +301,10 @@ export default function FormEdit({ idEdit }) {
                                 <input
                                   type="radio"
                                   className="m-input-radio"
-                                  checked={gend.id === gender}
-                                  onChange={() => setGender(gend.id)}
+                                  checked={gend.value === Gender}
+                                  onChange={handleChange}
                                   name="Gender"
+                                  value={gend.value}
                                   tabIndex={4}
                                 />
                                 <span className="m-radio">
@@ -313,9 +332,8 @@ export default function FormEdit({ idEdit }) {
                             className="m-input"
                             name="IdentityNumber"
                             maxLength={20}
-                            value={identityNumber}
-                            onChange={(e) => setIdentityNumber(e.target.value)}
-                            propname="IdentityNumber"
+                            value={IdentityNumber}
+                            onChange={(e) => handleChange()}
                             tabIndex={8}
                           />
                         </div>
@@ -325,11 +343,10 @@ export default function FormEdit({ idEdit }) {
                           </div>
                           <input
                             type="date"
-                            value={dateRange}
-                            onChange={(e) => setDateRange(e.target.value)}
+                            value={FORMATDATERERVESE(DateRange)}
+                            onChange={(e) => handleChange(e)}
                             className="m-input"
-                            name="IdentityDate"
-                            propname="IdentityDate"
+                            name="DateRange"
                             tabIndex={9}
                           />
                         </div>
@@ -340,10 +357,9 @@ export default function FormEdit({ idEdit }) {
                           <input
                             type="text"
                             className="m-input"
-                            value={issuedBy}
-                            onChange={(e) => setIssuedBy(e.target.value)}
-                            name="IdentityPlace"
-                            propname="IdentityPlace"
+                            value={IssuedBy}
+                            onChange={(e) => handleChange()}
+                            name="IssuedBy"
                             tabIndex={11}
                           />
                         </div>
@@ -356,8 +372,8 @@ export default function FormEdit({ idEdit }) {
                         </div>
                         <input
                           type="text"
-                          value={address}
-                          onChange={(e) => setAddress(e.target.value)}
+                          value={Address}
+                          onChange={(e) => handleChange(e)}
                           className="m-input"
                           name="Address"
                           propname="Address"
@@ -379,10 +395,9 @@ export default function FormEdit({ idEdit }) {
                           <input
                             type="text"
                             className="m-input"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            name="TelephoneNumber"
-                            propname="TelephoneNumber"
+                            value={PhoneNumber}
+                            onChange={(e) => handleChange(e)}
+                            name="PhoneNumber"
                             tabIndex={13}
                           />
                         </div>
@@ -393,12 +408,11 @@ export default function FormEdit({ idEdit }) {
                             </div>
                           </div>
                           <input
-                            value={bankNumber}
-                            onChange={(e) => setBankNumber(e.target.value)}
+                            value={BankNumber}
+                            onChange={(e) => handleChange(e)}
                             type="text"
                             className="m-input"
-                            name="BankAccountNumber"
-                            propname="BankAccountNumber"
+                            name="BankNumber"
                             tabIndex={16}
                           />
                         </div>
@@ -406,20 +420,15 @@ export default function FormEdit({ idEdit }) {
                       <div className="m-col-2 m-pr-6">
                         <div className="m-input-100 m-pb-24">
                           <div className="m-flex-wrap">
-                            <div
-                              className="m-input-title"
-                              title="Điện thoại cố định"
-                            >
-                              ĐT cố định
-                            </div>
+                            <div className="m-input-title">Mật khẩu</div>
                           </div>
                           <input
-                            value={phoneFixed}
-                            onChange={(e) => setPhoneFixed(e.target.value)}
-                            type="text"
+                            value={Password}
+                            onChange={(e) => handleChange(e)}
                             className="m-input"
-                            name="PhoneNumber"
-                            propname="PhoneNumber"
+                            readOnly={true}
+                            name="Password"
+                            type="password"
                             tabIndex={14}
                           />
                         </div>
@@ -430,10 +439,9 @@ export default function FormEdit({ idEdit }) {
                           <input
                             type="text"
                             className="m-input"
-                            value={bankName}
-                            onChange={(e) => setBankName(e.target.value)}
+                            value={BankName}
+                            onChange={(e) => handleChange(e)}
                             name="BankName"
-                            propname="BankName"
                             tabIndex={17}
                           />
                         </div>
@@ -445,14 +453,11 @@ export default function FormEdit({ idEdit }) {
                           </div>
                           <input
                             type="text"
-                            id="m-email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={Email}
+                            onChange={(e) => handleChange(e)}
                             className="m-input"
                             name="Email"
-                            propname="Email"
                             tabIndex={15}
-                            isemail=""
                           />
                         </div>
                         <div className="m-input-100 m-pb-24">
@@ -461,11 +466,10 @@ export default function FormEdit({ idEdit }) {
                           </div>
                           <input
                             type="text"
-                            value={bankBranch}
-                            onChange={(e) => setBankBranch(e.target.value)}
+                            value={BankBranch}
+                            onChange={(e) => handleChange(e)}
                             className="m-input"
-                            name="BankBranchName"
-                            propname="BankBranchName"
+                            name="BankBranch"
                             tabIndex={18}
                           />
                         </div>

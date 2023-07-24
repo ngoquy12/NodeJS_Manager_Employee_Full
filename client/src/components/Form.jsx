@@ -22,7 +22,7 @@ export default function Form({ handleClose, loadData }) {
   const [bankBranch, setBankBranch] = useState("");
   const [email, setEmail] = useState("");
 
-  // Đóng form truyền xuống component chacha
+  // Đóng form truyền xuống component cha
   const handleCloseParent = () => {
     setClose(handleClose);
   };
@@ -73,6 +73,7 @@ export default function Form({ handleClose, loadData }) {
       IssuedBy: issuedBy,
       Address: address,
       PhoneNumber: phoneNumber,
+      PhoneFixed: phoneFixed,
       Password: password,
       Email: email,
       BankNumber: bankNumber,

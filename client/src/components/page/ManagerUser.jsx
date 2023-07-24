@@ -125,6 +125,11 @@ export default function Content() {
     setIdEdit(employeeId);
   };
 
+  // Hiển thị form edit employee
+  const handleCloseEdit = () => {
+    setShowFormEdit(false);
+  };
+
   return (
     <>
       {loading ? <Loading /> : <></>}
@@ -139,7 +144,15 @@ export default function Content() {
         <div className="m-content">
           <Header />
           {/* Show form edit employee  */}
-          {showFormEdit ? <FormEdit idEdit={idEdit} /> : <></>}
+          {showFormEdit ? (
+            <FormEdit
+              idEdit={idEdit}
+              loadData={loadData}
+              handleCloseEdit={handleCloseEdit}
+            />
+          ) : (
+            <></>
+          )}
           <div className="m-main-content">
             <div className="m-content-header">
               <div className="m-header-title">Nhân viên</div>

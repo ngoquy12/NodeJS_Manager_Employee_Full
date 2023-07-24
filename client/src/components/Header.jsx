@@ -2,7 +2,7 @@ import React from "react";
 
 export default function Header() {
   // Lấy dữ liệu từ local
-  const userLocal = JSON.parse(localStorage.getItem("userInfo"));
+  const userLocal = JSON.parse(localStorage.getItem("userInfo")) || {};
   return (
     <>
       <div className="m-navbar">

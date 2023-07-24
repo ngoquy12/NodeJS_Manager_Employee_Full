@@ -69,7 +69,8 @@ route.get("/", (req, res) => {
 // Lấy thông tin tất cả employee + Phân trang và tìm kiếm
 route.get("/:id", (req, res) => {
   // Câu Câu lệnh query
-  const queryString = "SELECT * FROM employees WHERE EmployeeId = ?";
+  const queryString =
+    "SELECT * FROM employees as e  join departments as d on e.DepartmentId  = d.DepartmentId WHERE EmployeeId = ?";
   const { id } = req.params;
   database.query(queryString, [id], (err, result) => {
     if (err) {
@@ -228,6 +229,74 @@ route.post("/login", (req, res) => {
           }
         });
       }
+    }
+  });
+});
+
+// Cập nhật thông tin employees
+route.put("/:id", checkDataEmpty, validateEmail, (req, res) => {
+  const { id } = req.params;
+  // Lấy dữ liệu dưới body
+  const {
+    EmployeeCode,
+    EmployeeName,
+    DateOfBirth,
+    Gender,
+    DepartmentId,
+    IdentityNumber,
+    DateRange,
+    Position,
+    IssuedBy,
+    Address,
+    PhoneNumber,
+    Email,
+    BankNumber,
+    BankName,
+    BankBranch,
+    ModifiedDate,
+    ModifiedBy,
+  } = req.body;
+
+  const newDateOfBirth = FORMATDATERERVESE(DateOfBirth);
+  const newDateRange = FORMATDATERERVESE(DateRange);
+  const newModifiedDate = FORMATDATERERVESE(ModifiedDate);
+
+  const newUser = [
+    EmployeeCode,
+    EmployeeName,
+    newDateOfBirth,
+    Gender,
+    DepartmentId,
+    IdentityNumber,
+    newDateRange,
+    Position,
+    IssuedBy,
+    Address,
+    PhoneNumber,
+    Email,
+    BankNumber,
+    BankName,
+    BankBranch,
+    newModifiedDate,
+    ModifiedBy,
+    id,
+  ];
+
+  // Câu lệnh query
+  const queryString =
+    "UPDATE employees SET EmployeeCode = ?, EmployeeName = ?, DateOfBirth = ? , Gender = ?, DepartmentId = ?, IdentityNumber = ?, DateRange = ?, Position = ?, IssuedBy = ?, Address = ?, PhoneNumber = ?, Email = ?, BankNumber = ?, BankName = ?, BankBranch = ?, ModifiedDate = ?, ModifiedBy = ? WHERE EmployeeId = ? ";
+
+  database.query(queryString, newUser, (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        status: 500,
+        devMessage: err,
+      });
+    } else {
+      return res.status(200).json({
+        status: 200,
+        message: "Cập nhật thông tin thành công",
+      });
     }
   });
 });
